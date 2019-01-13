@@ -1,90 +1,106 @@
-#ifndef SUBWAY_H
-#define SUBWAY_H
+#ifndef  STATION_H
+#define STATION_H
+
+#include "iostream"
+#include "fstream"
 #include "string"
-#define _TOTAL 393
-#define _MAXS 100
+#define _TOTAL 331
+#define _STATIONS 50
 using namespace std;
 
-class Station //地铁站
+class Station
 {
 public:
-  Station(string &staname){
+	Station()
+	{
 
-  };
-  Station(){
-
-  };
-  string getName();
-  void setLaststa(Station laststa);
-  void setNextsta(Station nextsta);
-
+	};
+	void setStation(string name, string line, int number) {
+		m_name = name;
+		m_line = line;
+		m_number = number;
+	}
+	string getName()
+	{
+		return m_name;
+	}
 private:
-  string m_staname;
-  Station laststa();
-  Station nextsta();
-  int m_transLine[3];
+	int m_number;
+	string m_name;
+	string m_line;
+	/*Station *neighbours = new Station[2];
+	Station *transneighbours = new Station[4];*/
 };
 
-class Line //地铁线
+class Map
 {
 public:
-  Line(){};
-  void setLine(string stations[_MAXS]);
-
+	Map(string filename);
+	void print() {
+		cout << stanum << endl;
+		for (int i = 0; i < stanum; i++)
+		{
+			cout << stations[i].getName() << endl;
+		}
+	}
 private:
-  Station stations[_MAXS];
-  int m_order;
-  string m_name;
-  bool m_ifcircle;
+	Station stations[_TOTAL];
+	int stanum;
 };
 
-class Map //线路图
+class Matrix 
 {
 public:
-  Map(string filename);
+	Matrix(Map map)
+	{
 
-  void outputLine(int &num);
-  void search(string &start, string &end);
+	}
 
-private:
-  Line lines[23];
-};
-
-class Matrix //邻接矩阵
-{
-public:
-  Matrix(Map map, Station strat);
-
-private:
-  int m_matrix[_TOTAL][_TOTAL];
+	int matrix[_TOTAL][_TOTAL];
 };
 
 Map::Map(string filename)
 {
-  fstream fin(filename);
-  string readline[_MAXS];
-  int staorder = 0;
-  int lineorder = 0;
-  string linetype;
-  string templinetype;
-  while (getline(fin, readline[staorder]))
-  {
-    if (readline[staorder].empty()) //下一条线
-    {
-      int index = readline[staorder - 1].find(' ');
-      string sub = readline[staorder - 1].substr(0, index);
-      cout << sub << ' ' << staorder << endl;
-      staorder = 0;
-
-      this->lines[linetype].setLine(*readline);
-    }
-    else
-    {
-      staorder++;
-    }
-  }
-  int index = readline[staorder - 1].find(' ');
-  string sub = readline[staorder - 1].substr(0, index);
-  cout << sub << ' ' << staorder << endl;
-};
-#endif
+	fstream fin(filename);
+	string readline;
+	string transstation[80];
+	int transflag = 0;
+	int num = 0;
+	while (getline(fin, readline))
+	{
+		if (!readline.empty())
+		{
+			int indexblank = readline.find(' '); //第一个空格的位置
+			int indextrans = readline.find('-'); // - 的位置，表示该站是换乘车站
+			if (indextrans == -1) {//没有换乘
+				string staname = readline.substr(indexblank + 1);
+				string linename = readline.substr(0, indexblank);
+				stations[num].setStation(staname, linename, num);
+				stanum = num;
+				num++;
+			}
+			else//有换乘
+			{
+				int flag = 0;
+				string staname = readline.substr(indexblank + 1, indextrans - indexblank - 1);
+				for (int i = 0; i < transflag; i++)
+				{
+					if (staname == transstation[i]) {
+						flag = 1;
+						break;
+					}
+				}
+				if (!flag) {
+					transstation[transflag] = staname;
+					transflag++;
+					string linename = readline.substr(0, indexblank) + "," + readline.substr(indextrans + 1);
+					stations[num].setStation(staname, linename, num);
+					stanum = num;
+					num++;
+				}
+			}
+		}
+	}
+	stanum++;
+}
+#endif // ! STATION_H
