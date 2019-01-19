@@ -54,7 +54,7 @@ private:
 
 int Station::compareLine(Station another)
 {
-	if (this->m_istran == 0 && another.getType() == 0) //éƒ½ä¸æ˜¯æ¢ä¹˜è½¦ç«™
+	if (this->m_istran == 0 && another.getType() == 0) //¶¼²»ÊÇ»»³Ë³µÕ¾
 	{
 		if (this->m_line == another.getLine())
 		{
@@ -175,22 +175,31 @@ class Map
 public:
 	Map()
 	{
-		memset(maze, INF, sizeof(maze));
+		memset(m_maze, INF, sizeof(m_maze));
 	};
-	void setMap(string filename);//æ ¹æ®txtè®¾ç½®åœ°å›¾
-	void printLine(string line);
-	void setMartix();//è®¾ç½®é‚»æ¥çŸ©é˜µ
-	void search(string start, string end);//dijkstraç®—æ³•
-	void printPath(int endnumber, string lastline);//è¾“å‡ºè·¯å¾„
-	Station Map::getStationbynumber(int number);
-	string getSameline(Station s1, Station s2);
+	void setMap(string filename);//¸ù¾İtxtÉèÖÃµØÍ¼
+	void printLine(string line);//Êä³öµØÌúÏßÂ·
+	void setMartix();//ÉèÖÃÁÚ½Ó¾ØÕó
+	void search(string start, string end);//dijkstraËã·¨
+	void greedSearch(Station start, Station end);//Ì°ĞÄËÑË÷
+	void printPath(int endnumber, string lastline);//Êä³öÂ·¾¶
+	Station Map::getStationbynumber(int number);//¸ù¾İĞòºÅ»ñµÃÕ¾µã
+	Station Map::getStationbyname(string name);//¸ù¾İÃû×Ö»ñµÃÕ¾µã
+	string getSameline(Station s1, Station s2);//»ñµÃÁ½¸öÕ¾µÄÏàÍ¬ÏßÂ·
+	void traversal(string start);//È«±éÀú
+	void addpath(int endnumber, string lastline);
+	bool isInMap(string name);//ÅĞ¶ÏÕ¾µãÊÇ·ñºÏ·¨
+	void updateMatrix();//µ÷ÕûÈ¨Öµ
+	int getRemainStationNumber();
 private:
 	Station stations[_TOTALS];
-	int stanum;
-	int maze[_TOTAL][_TOTAL];
-	bool vis[_TOTAL];
-	int dis[_TOTAL];
-	int path[_TOTAL];
+	int m_stanum;
+	int m_maze[_TOTAL][_TOTAL];
+	bool m_vis[_TOTAL];
+	int m_dis[_TOTAL];
+	int m_path[_TOTAL];
+	bool m_tvis[_TOTAL];
+	int m_tpath[_TOTAL * 100];
 };
 
 void Map::setMap(string filename)
@@ -200,23 +209,23 @@ void Map::setMap(string filename)
 	string transstation[80];
 	int transflag = 0;
 	int num = 0;
-	stanum = 0;
+	m_stanum = 0;
 	while (getline(fin, readline))
 	{
 		if (!readline.empty())
 		{
-			int indexblank = readline.find(' '); //ç¬¬ä¸€ä¸ªç©ºæ ¼çš„ä½ç½®
-			int indextrans = readline.find('-'); // - çš„ä½ç½®ï¼Œè¡¨ç¤ºè¯¥ç«™æ˜¯æ¢ä¹˜è½¦ç«™
-			if (indextrans == -1) {//æ²¡æœ‰æ¢ä¹˜
+			int indexblank = readline.find(' '); //µÚÒ»¸ö¿Õ¸ñµÄÎ»ÖÃ
+			int indextrans = readline.find('-'); // - µÄÎ»ÖÃ£¬±íÊ¾¸ÃÕ¾ÊÇ»»³Ë³µÕ¾
+			if (indextrans == -1) {//Ã»ÓĞ»»³Ë
 				string staname = readline.substr(indexblank + 1);
 				string linename = readline.substr(0, indexblank);
-				stations[stanum].setStation(staname, linename, num);
-				stanum++;
+				stations[m_stanum].setStation(staname, linename, num);
+				m_stanum++;
 				num++;
 			}
-			else//æœ‰æ¢ä¹˜
+			else//ÓĞ»»³Ë
 			{
-				stations[stanum].setIstran();
+				stations[m_stanum].setIstran();
 				int flag = 0;
 				string staname = readline.substr(indexblank + 1, indextrans - indexblank - 1);
 				string linename = readline.substr(0, indexblank) + "," + readline.substr(indextrans + 1);
@@ -227,34 +236,34 @@ void Map::setMap(string filename)
 						break;
 					}
 				}
-				if (!flag) {//å¦‚æœæ˜¯æœªæ›¾è®°å½•çš„æ¢ä¹˜è½¦ç«™
+				if (!flag) {//Èç¹ûÊÇÎ´Ôø¼ÇÂ¼µÄ»»³Ë³µÕ¾
 					transstation[transflag] = staname;
 					transflag++;
-					stations[stanum].setStation(staname, linename, num);
-					stanum++;
+					stations[m_stanum].setStation(staname, linename, num);
+					m_stanum++;
 					num++;
 				}
 				else
-				{//å¦‚æœæ˜¯å·²ç»è®°å½•çš„æ¢ä¹˜è½¦ç«™
+				{//Èç¹ûÊÇÒÑ¾­¼ÇÂ¼µÄ»»³Ë³µÕ¾
 					for (int i = 0; i < _TOTALS; i++) {
 						if (staname == stations[i].getName()) {
-							stations[stanum].setStation(staname, linename, stations[i].getNumber());
+							stations[m_stanum].setStation(staname, linename, stations[i].getNumber());
 							break;
 						}
 					}
-					stanum++;
+					m_stanum++;
 				}
 			}
 		}
 	}
 }
 
-void Map::search(string start, string end) //dijkstraç®—æ³•
+void Map::search(string start, string end) //dijkstraËã·¨
 {
 	this->setMartix();
-	memset(dis, INF, sizeof(dis));
-	memset(vis, false, sizeof(vis));
-	memset(path, -1, sizeof(path));
+	memset(m_dis, INF, sizeof(m_dis));
+	memset(m_vis, false, sizeof(m_vis));
+	memset(m_path, -1, sizeof(m_path));
 
 	int startnumber;
 	int endnumber;
@@ -277,67 +286,34 @@ void Map::search(string start, string end) //dijkstraç®—æ³•
 		}
 	}
 
-	dis[startnumber] = 0;
+	m_dis[startnumber] = 0;
 	for (int i = 0; i < _TOTAL; i++)
 	{
-		//æ‰¾åˆ°å’Œèµ·ç‚¹è·ç¦»æœ€çŸ­çš„ç‚¹
+		//ÕÒµ½ºÍÆğµã¾àÀë×î¶ÌµÄµã
 		int minx = INF;
 		int minmark;
 		for (int j = 0; j < _TOTAL; j++)
 		{
-			if (vis[j] == false && dis[j] <= minx)
+			if (m_vis[j] == false && m_dis[j] <= minx)
 			{
-				minx = dis[j];
+				minx = m_dis[j];
 				minmark = j;
 			}
 		}
-		//å¹¶æ ‡è®°
-		vis[minmark] = true;
-		//æ›´æ–°æ‰€æœ‰å’Œå®ƒè¿æ¥çš„ç‚¹çš„è·ç¦»
+		//²¢±ê¼Ç
+		m_vis[minmark] = true;
+		//¸üĞÂËùÓĞºÍËüÁ¬½ÓµÄµãµÄ¾àÀë
 		for (int j = 0; j < _TOTAL; j++)
 		{
-			if (vis[j] == false && dis[j] > dis[minmark] + maze[minmark][j])
+			if (m_vis[j] == false && m_dis[j] > m_dis[minmark] + m_maze[minmark][j])
 			{
-				dis[j] = dis[minmark] + maze[minmark][j];
-				path[j] = minmark;
+				m_dis[j] = m_dis[minmark] + m_maze[minmark][j];
+				m_path[j] = minmark;
 			}
 		}
 	}
 
 	this->printPath(endnumber, lastline);
-	/*stack<int> q;
-	int p = endnumber;
-	while (path[p] != -1)
-	{
-		q.push(p);
-		p = path[p];
-	}
-	q.push(p);
-	cout << "æ¢ä¹˜ç«™" << ":" << dis[endnumber] + 1;
-	while (!q.empty())
-	{
-		cout << endl;
-		string sta;
-		for (int i = 0; i < _TOTALS; i++)
-		{
-			if (stations[i].getNumber() == q.top())
-			{
-				sta = stations[i].getName();
-				if (stations[i].getLines() != lastline)
-				{
-					cout << sta;
-					lastline = stations[i].getLines();
-				}
-				else
-				{
-					cout << sta;
-				}
-				break;
-			}
-		}
-		q.pop();
-	}
-	cout << endl;*/
 }
 
 void Map::printPath(int endnumber, string lastline)
@@ -347,22 +323,22 @@ void Map::printPath(int endnumber, string lastline)
 	int stationpath[_TOTAL];
 	memset(stationpath, INF, sizeof(stationpath));
 
-	while (path[p] != -1) //å°†è·¯å¾„å‹å…¥æ ˆä¸­
+	while (m_path[p] != -1) //½«Â·¾¶Ñ¹ÈëÕ»ÖĞ
 	{
 		q.push(p);
-		p = path[p];
+		p = m_path[p];
 	}
 	q.push(p);
 
 	int i = 0;
-	while (!q.empty()) //ä¸€æ¬¡å‡ºæ ˆè·å¾—æ­£åºè·¯å¾„
+	while (!q.empty()) //Ò»´Î³öÕ»»ñµÃÕıĞòÂ·¾¶
 	{
 		stationpath[i] = q.top();
 		i++;
 		q.pop();
 	}
-	cout << dis[endnumber] + 1 << endl;
-	for (int i = 0; stationpath[i] != INF; i++) //è¾“å‡º
+	cout << m_dis[endnumber] + 1 << endl;
+	for (int i = 0; stationpath[i] != INF; i++) //Êä³ö
 	{
 		Station sta = this->getStationbynumber(stationpath[i]);
 		cout << sta.getName();
@@ -374,7 +350,7 @@ void Map::printPath(int endnumber, string lastline)
 			string line2 = this->getSameline(sta, nextsta);
 			if (line1 != line2)
 			{
-				cout << " æ¢ä¹˜" << line2 << "å·çº¿";
+				cout << " »»³Ë" << line2 << "ºÅÏß";
 			}
 		}
 		cout << endl;
@@ -383,23 +359,23 @@ void Map::printPath(int endnumber, string lastline)
 
 void Map::setMartix()
 {
-	memset(maze, INF, sizeof(maze));
+	memset(m_maze, INF, sizeof(m_maze));
 
-	//2ã€10ä¸ºç¯çº¿
-	maze[23][38] = 1;
-	maze[38][23] = 1;
-	maze[173][207] = 1;
-	maze[207][173] = 1;
+	//2¡¢10Îª»·Ïß
+	m_maze[23][38] = 1;
+	m_maze[38][23] = 1;
+	m_maze[173][207] = 1;
+	m_maze[207][173] = 1;
 
 	for (int i = 0; i < _TOTALS; i++)
 	{
 		if (i != 0 && i != _TOTALS - 1)
 		{
 			if (stations[i].compareLine(stations[i + 1])) {
-				maze[stations[i].getNumber()][stations[i + 1].getNumber()] = 1;
+				m_maze[stations[i].getNumber()][stations[i + 1].getNumber()] = 1;
 			}
 			if (stations[i].compareLine(stations[i - 1])) {
-				maze[stations[i].getNumber()][stations[i - 1].getNumber()] = 1;
+				m_maze[stations[i].getNumber()][stations[i - 1].getNumber()] = 1;
 			}
 
 
@@ -408,11 +384,11 @@ void Map::setMartix()
 		{
 			if (i == 0)
 			{
-				maze[stations[i].getNumber()][stations[i + 1].getNumber()] = 1;
+				m_maze[stations[i].getNumber()][stations[i + 1].getNumber()] = 1;
 			}
 			else
 			{
-				maze[stations[i].getNumber()][stations[i - 1].getNumber()] = 1;
+				m_maze[stations[i].getNumber()][stations[i - 1].getNumber()] = 1;
 			}
 		}
 	}
@@ -423,6 +399,17 @@ Station Map::getStationbynumber(int number)
 	for (int i = 0; i < _TOTALS; i++)
 	{
 		if (stations[i].getNumber() == number)
+		{
+			return stations[i];
+		}
+	}
+}
+
+Station Map::getStationbyname(string name)
+{
+	for (int i = 0; i < _TOTALS; i++)
+	{
+		if (name == stations[i].getName())
 		{
 			return stations[i];
 		}
@@ -503,5 +490,151 @@ void Map::printLine(string line)
 			cout << this->stations[i].getName() << endl;
 		}
 	}
+}
+
+void Map::traversal(string start)
+{
+	this->setMartix();
+	Station startsta = this->getStationbyname(start);
+	memset(m_tvis, false, sizeof(m_tvis));
+	memset(m_tpath, INF, sizeof(m_tpath));
+	int visnumber = this->getRemainStationNumber();
+
+	m_tvis[startsta.getNumber()] = true;
+
+	while (visnumber > 0)
+	{
+		for (int i = 0; i < _TOTAL; i++)
+		{
+			if (this->m_tvis[i] != true)
+			{
+				Station endsta = this->getStationbynumber(i);
+				this->greedSearch(startsta, endsta);
+				startsta = endsta;
+				visnumber = this->getRemainStationNumber();
+				break;
+			}
+		}
+	}
+
+	this->greedSearch(startsta, this->getStationbyname(start));
+	
+	int count = 0;
+	for (int i = 0; this->m_tpath[i] != INF; i++)
+	{
+		count++;
+	}
+
+	cout << count << endl;
+
+	for (int i = 0; this->m_tpath[i] != INF; i++)
+	{
+		cout << this->m_tpath[i] << this->getStationbynumber(this->m_tpath[i]).getName() <<endl;
+	}
+}
+
+bool Map::isInMap(string name)
+{
+	for (int i = 0; i < _TOTALS; i++)
+	{
+		if (name == stations[i].getName())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void Map::greedSearch(Station start,Station end)
+{
+	memset(m_dis, INF, sizeof(m_dis));
+	memset(m_vis, false, sizeof(m_vis));
+	memset(m_path, -1, sizeof(m_path));
+
+	int startnumber = start.getNumber();
+	int endnumber = end.getNumber();
+
+	m_dis[startnumber] = 0;
+	for (int i = 0; i < _TOTAL; i++)
+	{
+		int minx = INF;
+		int minmark;
+		for (int j = 0; j < _TOTAL; j++)//ÕÒµ½ºÍÆğµã¾àÀë×î¶ÌµÄµã
+		{
+			if (m_vis[j] == false && m_dis[j] <= minx)
+			{
+				minx = m_dis[j];
+				minmark = j;
+			}
+		}
+		m_vis[minmark] = true; //²¢±ê¼Ç
+		for (int j = 0; j < _TOTAL; j++)//¸üĞÂËùÓĞºÍËüÁ¬½ÓµÄµãµÄ¾àÀë
+		{
+			if (m_vis[j] == false && m_dis[j] > m_dis[minmark] + m_maze[minmark][j])
+			{
+				m_dis[j] = m_dis[minmark] + m_maze[minmark][j];
+				m_path[j] = minmark;
+			}
+		}
+	}
+
+	this->addpath(endnumber,start.getFirstline());
+}
+
+void Map::addpath(int endnumber, string lastline)
+{
+	stack<int> q;
+	int p = endnumber;
+	int stationpath[_TOTAL];
+	memset(stationpath, INF, sizeof(stationpath));
+
+	while (m_path[p] != -1) //½«Â·¾¶Ñ¹ÈëÕ»ÖĞ
+	{
+		q.push(p);
+		p = m_path[p];
+	}
+	q.push(p);
+
+	int i = 0;
+	while (!q.empty()) //Ò»´Î³öÕ»»ñµÃÕıĞòÂ·¾¶
+	{
+		stationpath[i] = q.top();
+		i++;
+		q.pop();
+	}
+
+	int mark;
+	for (int i = 0; i < _TOTALS * 10; i++)
+	{
+		if (this->m_tpath[i] == INF)
+		{
+			mark = i;
+			break;
+		}
+	}
+
+	for (int i = mark, j = 1; stationpath[j] != INF; i++, j++)
+	{
+		m_tpath[i] = stationpath[j];
+		this->m_tvis[stationpath[j]] = true;
+	}
+}
+
+void Map::updateMatrix()
+{
+
+}
+
+int Map::getRemainStationNumber()
+{
+	int count = 0;
+	for (int i = 0; i < _TOTAL; i++)
+	{
+		if (this->m_tvis[i] == false)
+		{
+			count++;
+		}
+	}
+	return count;
 }
 #endif
