@@ -1,0 +1,10 @@
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\bin\Debug\test_subway1.exe.config
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\bin\Debug\test_subway1.exe
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\bin\Debug\test_subway1.pdb
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.Form1.resources
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.Properties.Resources.resources
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.csproj.GenerateResource.cache
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.csproj.CoreCompileInputs.cache
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.exe
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.pdb
+C:\Users\14216\Desktop\大三上资料集\软件工程基础\TEAMWORK\test_subway1\test_subway1\obj\Debug\test_subway1.csprojAssemblyReference.cache
