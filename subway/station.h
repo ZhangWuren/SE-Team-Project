@@ -1,12 +1,12 @@
-#ifndef  STATION_H
-#define STATION_H
+#ifndef  SUBWAY_H
+#define SUBWAY_H
 
 #include "iostream"
 #include "fstream"
 #include "string"
 #include "string.h"
 #include "stack"
-#define _TOTAL 331
+#define _TOTAL 330
 #define _TOTALS 393
 #define _STATIONS 50
 #define INF 0x7f7f7f7f
@@ -191,6 +191,7 @@ public:
 	bool isInMap(string name);//判断站点是否合法
 	int getRemainStationNumber();//获得全遍历时未遍历的车站
 	void setTransMartix();//考虑换乘代价是的权值矩阵
+	void test(string filename);// /z功能，测试
 private:
 	Station stations[_TOTALS];
 	int m_stanum;
@@ -524,7 +525,7 @@ void Map::traversal(string start)
 	{
 		count++;
 	}
-
+	
 	cout << count << endl;
 	cout << start << endl;
 	for (int i = 0; this->m_tpath[i] != INF; i++)
@@ -704,6 +705,65 @@ void Map::setTransMartix()
 				m_maze[i][i - 1] = 1;
 				m_maze[i][195] = 3;
 			}
+		}
+	}
+}
+
+void Map::test(string filename)
+{
+	this->setMartix();
+	memset(this->m_tvis, false, sizeof(m_tvis));
+	fstream fin(filename);
+	string readline;
+	string stas[_TOTALS * 10];
+	for (int i = 0; i < _TOTALS * 10; i++)
+	{
+		stas[i].clear();
+	}
+	getline(fin, readline);
+	int count = stoi(readline);
+	int count1 = 0;
+	int i = 0;
+	while (getline(fin,readline))
+	{
+		stas[i] = readline;
+		i++;
+	}
+	for (int i = 1; !stas[i].empty(); i++)
+	{
+		Station s1 = this->getStationbyname(stas[i]);
+		Station s2 = this->getStationbyname(stas[i - 1]);
+		m_tvis[s1.getNumber()] = true;
+		m_tvis[s2.getNumber()] = true;
+		if (!this->m_maze[s1.getNumber()][s2.getNumber()])
+		{
+			cout << "error" << endl;
+			return;
+		}
+	}
+	
+	int novissta[_TOTAL];
+	memset(novissta, -1, sizeof(novissta));
+	for (int i = 0,j = 0; i < _TOTAL; i++)
+	{
+		if (this->m_tvis[i] == false)
+		{
+			novissta[j] = i;
+			j++;
+		}
+	}
+
+	if (novissta[0] == -1)
+	{
+		cout << "true" << endl;
+	}
+	else
+	{
+		cout << "false" << endl;
+		cout << "遗漏的站点有:" << endl;
+		for (int i = 0; novissta[i] != -1; i++)
+		{
+			cout << this->getStationbynumber(novissta[i]).getName() << endl;
 		}
 	}
 }
