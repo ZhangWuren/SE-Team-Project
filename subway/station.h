@@ -746,7 +746,7 @@ void Map::test(string filename)
 			m_tvis[156] = true;
 			m_tvis[195] = true;
 		}
-		if (!this->m_maze[s1.getNumber()][s2.getNumber()])
+		if (this->m_maze[s1.getNumber()][s2.getNumber()] != 1)
 		{
 			cout << "error" << endl;
 			return;
