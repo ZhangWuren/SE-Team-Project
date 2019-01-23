@@ -139,6 +139,7 @@ int Station::compareLine(Station another)
 			return 0;
 		}
 	}
+	return 0;
 }
 
 string Station::getFirstline()
@@ -150,7 +151,7 @@ string Station::getFirstline()
 		line[i].clear();
 		line[i].append("-1");
 	}
-	for (int i = 0, j = 0; i < this->m_line.length(); i++)
+	for (unsigned i = 0, j = 0; i < (this->m_line.length()); i++)
 	{
 		if (this->m_line[i] == ',')
 		{
@@ -195,7 +196,7 @@ public:
 private:
 	Station stations[_TOTALS];
 	int m_stanum;
-	int m_maze[_TOTAL][_TOTAL];
+	int m_maze[_TOTALS][_TOTALS];
 	bool m_vis[_TOTAL];
 	int m_dis[_TOTAL];
 	int m_path[_TOTAL];
@@ -370,9 +371,9 @@ void Map::setMartix()
 
 	for (int i = 0; i < _TOTALS; i++)
 	{
-		if (i != 0 && i != _TOTALS - 1)
+		if (i != 0 && i != _TOTALS - 1)//排除第一个和最后一个
 		{
-			if (stations[i].compareLine(stations[i + 1])) {
+			if (stations[i].compareLine(stations[i + 1])) {//判断是否为同一条线路
 				m_maze[stations[i].getNumber()][stations[i + 1].getNumber()] = 1;
 			}
 			if (stations[i].compareLine(stations[i - 1])) {
@@ -404,6 +405,7 @@ Station Map::getStationbynumber(int number)
 			return stations[i];
 		}
 	}
+	return stations[_TOTALS - 1];
 }
 
 Station Map::getStationbyname(string name)
@@ -415,6 +417,7 @@ Station Map::getStationbyname(string name)
 			return stations[i];
 		}
 	}
+	return stations[_TOTALS - 1];
 }
 
 string Map::getSameline(Station s1, Station s2)
@@ -429,7 +432,7 @@ string Map::getSameline(Station s1, Station s2)
 		line1[i].clear();
 		line1[i].append("-1");
 	}
-	for (int i = 0, j = 0; i < sl1.length(); i++)
+	for (unsigned i = 0, j = 0; i < (sl1.length()); i++)
 	{
 		if (sl1[i] == ',')
 		{
@@ -453,7 +456,7 @@ string Map::getSameline(Station s1, Station s2)
 		line2[i].clear();
 		line2[i].append("-1");
 	}
-	for (int i = 0, j = 0; i < sl2.length(); i++)
+	for (unsigned i = 0, j = 0; i < (sl2.length()); i++)
 	{
 		if (sl2[i] == ',')
 		{
@@ -480,6 +483,7 @@ string Map::getSameline(Station s1, Station s2)
 			}
 		}
 	}
+	return "error";
 }
 
 void Map::printLine(string line)
@@ -525,7 +529,7 @@ void Map::traversal(string start)
 	{
 		count++;
 	}
-	
+
 	cout << count << endl;
 	cout << start << endl;
 	for (int i = 0; this->m_tpath[i] != INF; i++)
@@ -604,7 +608,7 @@ void Map::addpath(int endnumber, string lastline)
 		q.pop();
 	}
 
-	int mark;
+	int mark = 0;
 	for (int i = 0; i < _TOTALS * 10; i++)
 	{
 		if (this->m_tpath[i] == INF)
@@ -666,7 +670,7 @@ void Map::setTransMartix()
 							m_maze[i][j] = 0;//同名站点可以直接到达，赋权值为0
 
 											 //和同名站点的相邻站点，即为换乘，赋权值为3
-							if (j != 392)
+							if (j != 392 && j!=0)
 							{//需考虑巴沟站没有j+1站
 								if (stations[j].compareLine(stations[j + 1])) {
 									m_maze[i][j + 1] = 3;
@@ -677,7 +681,9 @@ void Map::setTransMartix()
 							}
 							else
 							{
-								m_maze[i][j - 1] = 3;
+								if (j != 0) {
+									m_maze[i][j - 1] = 3;
+								}
 							}
 						}
 					}
@@ -715,7 +721,7 @@ void Map::test(string filename)
 	memset(this->m_tvis, false, sizeof(m_tvis));
 	fstream fin(filename);
 	string readline;
-	string stas[_TOTALS * 10];
+	string stas[_TOTALS * 2];
 	for (int i = 0; i < _TOTALS * 10; i++)
 	{
 		stas[i].clear();
@@ -724,7 +730,7 @@ void Map::test(string filename)
 	int count = stoi(readline);
 	int count1 = 0;
 	int i = 0;
-	while (getline(fin,readline))
+	while (getline(fin, readline))
 	{
 		stas[i] = readline;
 		i++;
@@ -741,10 +747,10 @@ void Map::test(string filename)
 			return;
 		}
 	}
-	
+
 	int novissta[_TOTAL];
 	memset(novissta, -1, sizeof(novissta));
-	for (int i = 0,j = 0; i < _TOTAL; i++)
+	for (int i = 0, j = 0; i < _TOTAL; i++)
 	{
 		if (this->m_tvis[i] == false)
 		{
