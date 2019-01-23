@@ -6,7 +6,7 @@
 #include "string"
 #include "string.h"
 #include "stack"
-#define _TOTAL 330
+#define _TOTAL 331
 #define _TOTALS 393
 #define _STATIONS 50
 #define INF 0x7f7f7f7f
@@ -670,7 +670,7 @@ void Map::setTransMartix()
 							m_maze[i][j] = 0;//同名站点可以直接到达，赋权值为0
 
 											 //和同名站点的相邻站点，即为换乘，赋权值为3
-							if (j != 392 && j!=0)
+							if (j != 392 && j != 0)
 							{//需考虑巴沟站没有j+1站
 								if (stations[j].compareLine(stations[j + 1])) {
 									m_maze[i][j + 1] = 3;
@@ -721,7 +721,7 @@ void Map::test(string filename)
 	memset(this->m_tvis, false, sizeof(m_tvis));
 	fstream fin(filename);
 	string readline;
-	string stas[_TOTALS * 2];
+	string stas[_TOTALS * 10];
 	for (int i = 0; i < _TOTALS * 10; i++)
 	{
 		stas[i].clear();
@@ -741,6 +741,11 @@ void Map::test(string filename)
 		Station s2 = this->getStationbyname(stas[i - 1]);
 		m_tvis[s1.getNumber()] = true;
 		m_tvis[s2.getNumber()] = true;
+		if (stas[i] == "大红门" || stas[i - 1] == "大红门")
+		{
+			m_tvis[156] = true;
+			m_tvis[195] = true;
+		}
 		if (!this->m_maze[s1.getNumber()][s2.getNumber()])
 		{
 			cout << "error" << endl;
